@@ -1,0 +1,28 @@
+
+class _ThemeChip extends StatelessWidget {
+  final String label;
+  final String value;
+  final Color color;
+  final String currentSelection;
+
+  const _ThemeChip(this.label, this.value, this.color, this.currentSelection);
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == currentSelection;
+    return ChoiceChip(
+      label: Text(label),
+      selected: isSelected,
+      selectedColor: color.withOpacity(0.3),
+      checkmarkColor: color, // Ensure checkmark is visible
+      labelStyle: TextStyle(
+          color: isSelected ? color.withOpacity(1.0) : Colors.black, // Darken text if selected
+          fontWeight: isSelected ? FontWeight.bold : FontWeight.normal),
+      onSelected: (selected) {
+        if (selected) {
+           PreferencesService.instance.setThemeColor(value);
+        }
+      },
+    );
+  }
+}
