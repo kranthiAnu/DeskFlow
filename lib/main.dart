@@ -6,6 +6,7 @@ import 'screens/home_screen.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await NotificationService.instance.init();
+  await PreferencesService.instance.init();
   runApp(const FitWhileWorkApp());
 }
 

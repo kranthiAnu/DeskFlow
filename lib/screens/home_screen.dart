@@ -8,6 +8,7 @@ import 'workout_screen.dart';
 import 'settings_screen.dart';
 import 'history_screen.dart';
 import 'create_workout_screen.dart';
+import 'tips_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -30,7 +31,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
   
   Future<void> _initData() async {
-    await PreferencesService.instance.init();
+    // PreferencesService.instance.init() is now called in main()
     
     // Load custom workouts and mix
     final customs = PreferencesService.instance.getCustomWorkouts();
@@ -139,17 +140,25 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.push(context, MaterialPageRoute(builder: (_) => const HistoryScreen()));
             },
           ),
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings),
-            onPressed: () async {
-              await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
-              // When coming back, maybe timer duration changed, but we won't interrupt the current countdown
-              // until it resets or user manually resets, to be non-intrusive.
-              // But we can trigger a UI rebuild just in case.
-              setState(() {});
-            },
-          ),
+            IconButton(
+              tooltip: 'Wellness Tips',
+              icon: const Icon(Icons.lightbulb_outline), // Idea/Tip icon
+              onPressed: () {
+                Navigator.push(context, MaterialPageRoute(builder: (_) => const TipsScreen()));
+              },
+            ),
+            IconButton(
+              tooltip: 'Settings',
+              icon: const Icon(Icons.settings),
+              onPressed: () async {
+                await Navigator.push(context, MaterialPageRoute(builder: (_) => const SettingsScreen()));
+                // When coming back, maybe timer duration changed, but we won't interrupt the current countdown
+                // until it resets or user manually resets, to be non-intrusive.
+                // But we can trigger a UI rebuild just in case.
+                if (!mounted) return;
+                setState(() {});
+              },
+            ),
         ],
       ),
       body: Padding(

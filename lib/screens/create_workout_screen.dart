@@ -12,7 +12,7 @@ class CreateWorkoutScreen extends StatefulWidget {
 class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
-  final _durationController = TextEditingController(text: '120');
+  final _durationController = TextEditingController(text: '2');
   final _stepController = TextEditingController();
   
   final List<String> _steps = [];
@@ -48,9 +48,10 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Future<void> _save() async {
     if (_formKey.currentState!.validate() && _steps.isNotEmpty) {
-      final seconds = int.tryParse(_durationController.text) ?? 120;
+      final minutes = double.tryParse(_durationController.text) ?? 2.0;
+      final seconds = (minutes * 60).round();
       // Simple XP calculation: 10 XP per minute
-      final xp = (seconds / 60).ceil() * 10;
+      final xp = minutes.ceil() * 10;
 
       final workout = Workout(
         title: _titleController.text.trim(),
@@ -88,13 +89,14 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
               validator: (v) => v == null || v.isEmpty ? 'Required' : null,
             ),
             const SizedBox(height: 16),
+            const SizedBox(height: 16),
             TextFormField(
               controller: _durationController,
-              decoration: const InputDecoration(labelText: 'Duration (seconds)', border: OutlineInputBorder()),
+              decoration: const InputDecoration(labelText: 'Duration (minutes)', border: OutlineInputBorder()),
               keyboardType: TextInputType.number,
               validator: (v) {
-                 final n = int.tryParse(v ?? '');
-                 return (n == null || n <= 0) ? 'Valid seconds required' : null;
+                 final n = double.tryParse(v ?? '');
+                 return (n == null || n <= 0) ? 'Valid minutes required' : null;
               },
             ),
             const SizedBox(height: 16),

@@ -154,6 +154,14 @@ class PreferencesService {
     await _prefs.setStringList(_kCustomWorkouts, list);
   }
 
+  Future<void> removeCustomWorkout(int index) async {
+    final list = _prefs.getStringList(_kCustomWorkouts) ?? [];
+    if (index >= 0 && index < list.length) {
+      list.removeAt(index);
+      await _prefs.setStringList(_kCustomWorkouts, list);
+    }
+  }
+
   List<Workout> getCustomWorkouts() {
     final list = _prefs.getStringList(_kCustomWorkouts) ?? [];
     return list.map((e) => Workout.fromJson(jsonDecode(e))).toList();
