@@ -186,6 +186,26 @@ class _HomeScreenState extends State<HomeScreen> {
                           Text('⭐ XP: $xp'),
                           Text('🎯 Goal: $breaksToday / 3 breaks'),
                           const SizedBox(height: 8),
+                          Builder(
+                            builder: (context) {
+                              String stressLevel = 'High';
+                              Color stressColor = Colors.red;
+                              if (breaksToday >= 3) {
+                                stressLevel = 'Low';
+                                stressColor = Colors.green;
+                              } else if (breaksToday >= 1) {
+                                stressLevel = 'Moderate';
+                                stressColor = Colors.orange;
+                              }
+                              return Row(
+                                children: [
+                                  const Text('Stress Level: '),
+                                  Text(stressLevel, style: TextStyle(fontWeight: FontWeight.bold, color: stressColor)),
+                                ],
+                              );
+                            }
+                          ),
+                          const SizedBox(height: 8),
                           Text(
                             'Next break in: ${_mmss(nextBreak)}',
                             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blue),
@@ -228,11 +248,45 @@ class _HomeScreenState extends State<HomeScreen> {
                           Icon(w.icon, size: 28, color: w.color ?? Colors.blue),
                           const SizedBox(width: 8),
                         ],
-                        Text(
-                          w.title,
-                          style: const TextStyle(
-                              fontSize: 18, fontWeight: FontWeight.bold),
+                        Expanded(
+                          child: Text(
+                            w.title,
+                            style: const TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
                         ),
+                        if (mixedWorkouts.indexOf(w) >= allWorkouts.length)
+                           IconButton(
+                             icon: const Icon(Icons.delete_outline, color: Colors.red),
+                             tooltip: 'Delete custom workout',
+                             onPressed: () async {
+                               final confirm = await showDialog<bool>(
+                                 context: context,
+                                 builder: (_) => AlertDialog(
+                                   title: const Text('Delete Workout?'),
+                                   content: Text('Delete "${w.title}"?'),
+                                   actions: [
+                                     TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
+                                     TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Delete', style: TextStyle(color: Colors.red))),
+                                   ],
+                                 ),
+                               );
+                               
+                               if (confirm == true) {
+                                 // Calculate index in custom list
+                                 // mixedWorkouts = [defaults..., customs...]
+                                 // So index in customs = indexInMixed - defaults.length
+                                 final idx = mixedWorkouts.indexOf(w) - allWorkouts.length;
+                                 if (idx >= 0) {
+                                   await PreferencesService.instance.removeCustomWorkout(idx);
+                                   _reloadWorkouts(); // this will reload mixedWorkouts
+                                   _pickRandomWorkout();
+                                   if (!mounted) return;
+                                   ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Workout deleted')));
+                                 }
+                               }
+                             },
+                           ),
                       ],
                     ),
                     const SizedBox(height: 6),

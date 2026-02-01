@@ -15,6 +15,7 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
   final _durationController = TextEditingController(text: '2');
   final _stepController = TextEditingController();
   
+  bool _isMinutes = true;
   final List<String> _steps = [];
   Color _selectedColor = Colors.blue;
 
@@ -48,10 +49,18 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
 
   Future<void> _save() async {
     if (_formKey.currentState!.validate() && _steps.isNotEmpty) {
-      final minutes = double.tryParse(_durationController.text) ?? 2.0;
-      final seconds = (minutes * 60).round();
-      // Simple XP calculation: 10 XP per minute
-      final xp = minutes.ceil() * 10;
+      final inputVal = double.tryParse(_durationController.text) ?? 0.0;
+      
+      final int seconds;
+      final int xp;
+      
+      if (_isMinutes) {
+        seconds = (inputVal * 60).round();
+        xp = inputVal.ceil() * 10;
+      } else {
+        seconds = inputVal.round();
+        xp = (seconds / 60).ceil() * 10; // 10 XP per minute equivalent
+      }
 
       final workout = Workout(
         title: _titleController.text.trim(),
@@ -90,14 +99,37 @@ class _CreateWorkoutScreenState extends State<CreateWorkoutScreen> {
             ),
             const SizedBox(height: 16),
             const SizedBox(height: 16),
-            TextFormField(
-              controller: _durationController,
-              decoration: const InputDecoration(labelText: 'Duration (minutes)', border: OutlineInputBorder()),
-              keyboardType: TextInputType.number,
-              validator: (v) {
-                 final n = double.tryParse(v ?? '');
-                 return (n == null || n <= 0) ? 'Valid minutes required' : null;
-              },
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _durationController,
+                    decoration: InputDecoration(
+                      labelText: _isMinutes ? 'Duration (minutes)' : 'Duration (seconds)', 
+                      border: const OutlineInputBorder(),
+                    ),
+                    keyboardType: TextInputType.number,
+                    validator: (v) {
+                       final n = double.tryParse(v ?? '');
+                       return (n == null || n <= 0) ? 'Valid number required' : null;
+                    },
+                  ),
+                ),
+                const SizedBox(width: 16),
+                ToggleButtons(
+                  isSelected: [_isMinutes, !_isMinutes],
+                  onPressed: (index) {
+                    setState(() {
+                      _isMinutes = index == 0;
+                    });
+                  },
+                  borderRadius: BorderRadius.circular(8),
+                  children: const [
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Min')),
+                    Padding(padding: EdgeInsets.symmetric(horizontal: 12), child: Text('Sec')),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 16),
             const Text('Color', style: TextStyle(fontWeight: FontWeight.bold)),
